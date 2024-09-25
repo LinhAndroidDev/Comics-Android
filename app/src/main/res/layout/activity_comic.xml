@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ComicActivity">
+
+    <ImageView
+        android:id="@+id/imgIntro"
+        android:layout_marginTop="25dp"
+        android:scaleType="fitXY"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <RelativeLayout
+        android:id="@+id/viewComic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <LinearLayout
+        android:id="@+id/viewController"
+        android:background="#7E111111"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingVertical="20dp">
+
+        <Button
+            android:id="@+id/back"
+            android:text="back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/next"
+            android:layout_marginStart="100dp"
+            android:text="next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+<!--    <com.otaliastudios.zoom.ZoomLayout-->
+<!--        android:id="@+id/zoomLayout"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:scrollbars="vertical"-->
+<!--        app:transformation="none"-->
+<!--        app:transformationGravity="auto"-->
+<!--        app:alignment="center"-->
+<!--        app:overScrollHorizontal="false"-->
+<!--        app:overScrollVertical="false"-->
+<!--        app:overPinchable="false"-->
+<!--        app:horizontalPanEnabled="true"-->
+<!--        app:verticalPanEnabled="true"-->
+<!--        app:zoomEnabled="true"-->
+<!--        app:flingEnabled="true"-->
+<!--        app:scrollEnabled="true"-->
+<!--        app:oneFingerScrollEnabled="true"-->
+<!--        app:twoFingersScrollEnabled="true"-->
+<!--        app:threeFingersScrollEnabled="true"-->
+<!--        app:minZoom="1"-->
+<!--        app:minZoomType="zoom"-->
+<!--        app:maxZoom="2.5"-->
+<!--        app:maxZoomType="zoom"-->
+<!--        app:animationDuration="280"-->
+<!--        app:hasClickableChildren="false">-->
+
+<!--    </com.otaliastudios.zoom.ZoomLayout>-->
+
+</RelativeLayout>
