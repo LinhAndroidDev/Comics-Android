@@ -90,6 +90,8 @@ public class PageCurlView extends View {
     /** Defines the flip direction that is currently considered */
     private boolean bFlipRight;
 
+    private boolean bFlipLeft;
+
     /** If TRUE we are currently auto-flipping */
     private boolean bFlipping;
 
@@ -112,7 +114,20 @@ public class PageCurlView extends View {
     private ArrayList<Bitmap> mPages;
 
     /** LAGACY Current selected page */
-    private int mIndex = 0;
+    public int mIndex = 0;
+
+    private Boolean isVisibleController = true;
+
+    private OnClickActionListener listener;
+
+    public interface OnClickActionListener {
+        void onAction(Boolean isVisible); // Định nghĩa hành động
+    }
+
+    // Hàm để thiết lập listener
+    public void setOnCustomActionListener(OnClickActionListener listener) {
+        this.listener = listener;
+    }
 
     /**
      * Inner class used to represent a 2D point.
@@ -311,7 +326,7 @@ public class PageCurlView extends View {
      * Create list bitmap from resource by resource Id
      */
     public void GetListImageBitmap(Context context, String headerImageRes, int size) {
-        for (int i = 0; i < size; i++) {
+        for (int i = 1; i < size; i++) {
             // Tạo tên ảnh từ page0, page1,...
             String imageName = headerImageRes + i;
 
@@ -590,9 +605,11 @@ public class PageCurlView extends View {
 
                         // Set the right movement flag
                         bFlipRight = true;
+                        bFlipLeft = false;
                     } else if(mIndex > 0) {
                         // Set the left movement flag
                         bFlipRight = false;
+                        bFlipLeft = true;
 
                         // go to next previous page
                         previousView();
@@ -604,9 +621,14 @@ public class PageCurlView extends View {
 
                     break;
                 case MotionEvent.ACTION_UP:
-                    bUserMoves=false;
-                    bFlipping=true;
-                    FlipAnimationStep();
+                    if(mIndex < mPages.size() - 1) {
+                        bUserMoves=false;
+                        bFlipping=true;
+                        FlipAnimationStep();
+                    } else {
+                        isVisibleController = !isVisibleController;
+                        listener.onAction(isVisibleController);
+                    }
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if(mIndex < mPages.size() - 1) {
@@ -680,7 +702,7 @@ public class PageCurlView extends View {
      * Execute a step of the flip animation
      */
     public void FlipAnimationStep() {
-        if ( !bFlipping || mIndex >= mPages.size() - 1)
+        if ( !bFlipping )
             return;
 
         int width = getWidth();
@@ -706,7 +728,20 @@ public class PageCurlView extends View {
             if (bFlipRight) {
 //                SwapViews();
                 nextView();
+                if(isVisibleController) {
+                    isVisibleController = false;
+                    listener.onAction(false);
+                }
+            } else  {
+                if (mOldMovement.x > (width >> 1)) {
+                    isVisibleController = !isVisibleController;
+                    listener.onAction(isVisibleController);
+                } else if(isVisibleController && bFlipLeft) {
+                    isVisibleController = false;
+                    listener.onAction(false);
+                }
             }
+            bFlipLeft = false;
             ResetClipEdge();
 
             // Create values
@@ -854,7 +889,7 @@ public class PageCurlView extends View {
     /**
      * Swap to next view
      */
-    private void nextView() {
+    public void nextView() {
         int foreIndex = mIndex + 1;
         if(foreIndex >= mPages.size()) {
             foreIndex = 0;
@@ -870,7 +905,7 @@ public class PageCurlView extends View {
     /**
      * Swap to previous view
      */
-    private void previousView() {
+    public void previousView() {
         int backIndex = mIndex;
         int foreIndex = backIndex - 1;
         if(foreIndex < 0) {
@@ -878,6 +913,35 @@ public class PageCurlView extends View {
         }
         mIndex = foreIndex;
         setViews(foreIndex, backIndex);
+    }
+
+    public void actionNextView() {
+        if(mIndex < mPages.size() - 1) {
+            bFlipRight = true;
+            bFlipLeft = false;
+            bUserMoves=false;
+            bFlipping=true;
+            FlipAnimationStep();
+        }
+    }
+
+    public void actionBackView() {
+        if(mIndex > 0) {
+            // Set the left movement flag
+            bFlipRight = false;
+            bFlipLeft = true;
+
+            // go to next previous page
+            previousView();
+
+            int width = getWidth();
+            mMovement.x = IsCurlModeDynamic()?width<<1:width;
+            mMovement.y = mInitialEdgeOffset;
+
+            bUserMoves=false;
+            bFlipping=true;
+            FlipAnimationStep();
+        }
     }
 
     /**
