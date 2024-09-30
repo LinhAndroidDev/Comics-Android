@@ -111,7 +111,7 @@ public class PageCurlView extends View {
     private Bitmap mBackground;
 
     /** LAGACY List of pages, this is just temporal */
-    private ArrayList<Bitmap> mPages;
+    public ArrayList<Bitmap> mPages;
 
     /** LAGACY Current selected page */
     public int mIndex = 0;
@@ -120,13 +120,23 @@ public class PageCurlView extends View {
 
     private OnClickActionListener listener;
 
+    private ChangeIndexPage changeIndexPage;
+
     public interface OnClickActionListener {
-        void onAction(Boolean isVisible); // Định nghĩa hành động
+        void onAction(Boolean isVisible);
     }
 
     // Hàm để thiết lập listener
     public void setOnCustomActionListener(OnClickActionListener listener) {
         this.listener = listener;
+    }
+
+    public interface ChangeIndexPage {
+        void onIndex(int index);
+    }
+
+    public void setOnChangeIndexPage(ChangeIndexPage changeIndexPage) {
+        this.changeIndexPage = changeIndexPage;
     }
 
     /**
@@ -218,7 +228,7 @@ public class PageCurlView extends View {
     class FlipAnimationHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            PageCurlView.this.FlipAnimationStep();
+            PageCurlView.this.FlipAnimationStep(false);
         }
 
         public void sleep(long millis) {
@@ -624,7 +634,7 @@ public class PageCurlView extends View {
                     if(mIndex < mPages.size() - 1) {
                         bUserMoves=false;
                         bFlipping=true;
-                        FlipAnimationStep();
+                        FlipAnimationStep(false);
                     } else {
                         isVisibleController = !isVisibleController;
                         listener.onAction(isVisibleController);
@@ -701,7 +711,7 @@ public class PageCurlView extends View {
     /**
      * Execute a step of the flip animation
      */
-    public void FlipAnimationStep() {
+    public void FlipAnimationStep(boolean actionFromController) {
         if ( !bFlipping )
             return;
 
@@ -728,17 +738,21 @@ public class PageCurlView extends View {
             if (bFlipRight) {
 //                SwapViews();
                 nextView();
-                if(isVisibleController) {
-                    isVisibleController = false;
-                    listener.onAction(false);
+                if(actionFromController) {
+                    if(isVisibleController) {
+                        isVisibleController = false;
+                        listener.onAction(false);
+                    }
                 }
             } else  {
-                if (mOldMovement.x > (width >> 1)) {
-                    isVisibleController = !isVisibleController;
-                    listener.onAction(isVisibleController);
-                } else if(isVisibleController && bFlipLeft) {
-                    isVisibleController = false;
-                    listener.onAction(false);
+                if(actionFromController) {
+                    if (mOldMovement.x > (width >> 1)) {
+                        isVisibleController = !isVisibleController;
+                        listener.onAction(isVisibleController);
+                    } else if(isVisibleController && bFlipLeft) {
+                        isVisibleController = false;
+                        listener.onAction(false);
+                    }
                 }
             }
             bFlipLeft = false;
@@ -921,7 +935,7 @@ public class PageCurlView extends View {
             bFlipLeft = false;
             bUserMoves=false;
             bFlipping=true;
-            FlipAnimationStep();
+            FlipAnimationStep(true);
         }
     }
 
@@ -940,7 +954,7 @@ public class PageCurlView extends View {
 
             bUserMoves=false;
             bFlipping=true;
-            FlipAnimationStep();
+            FlipAnimationStep(true);
         }
     }
 
@@ -950,6 +964,7 @@ public class PageCurlView extends View {
      * @param background - Background view index
      */
     private void setViews(int foreground, int background) {
+        changeIndexPage.onIndex(mIndex + 1);
         mForeground = mPages.get(foreground);
         mBackground = mPages.get(background);
     }

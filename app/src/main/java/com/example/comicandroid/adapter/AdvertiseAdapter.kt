@@ -1,4 +1,4 @@
-package com.example.comicandroid
+package com.example.comicandroid.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
+import com.example.comicandroid.R
+import com.example.comicandroid.screenWidth
 
 class AdvertiseAdapter : Adapter<AdvertiseAdapter.MyViewHolder>() {
     private val advertises = listOf(R.drawable.advertise1, R.drawable.advertise2)

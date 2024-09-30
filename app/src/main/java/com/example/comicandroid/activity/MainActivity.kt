@@ -1,4 +1,4 @@
-package com.example.comicandroid
+package com.example.comicandroid.activity
 
 import android.content.Intent
 import android.graphics.Color
@@ -6,6 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearSnapHelper
+import com.example.comicandroid.adapter.AdvertiseAdapter
+import com.example.comicandroid.OverlapItemDecoration
+import com.example.comicandroid.R
 import com.example.comicandroid.adapter.ComicAdapter
 import com.example.comicandroid.databinding.ActivityMainBinding
 import com.example.comicandroid.model.Comic
@@ -25,19 +28,11 @@ class MainActivity : AppCompatActivity() {
 
         setUpFullScreen()
 
-        binding?.rcvAdvertise?.adapter = AdvertiseAdapter()
-        val snapHelper = LinearSnapHelper()
-        snapHelper.attachToRecyclerView(binding?.rcvAdvertise)
+        initAdvertisement()
+        initListComic()
+    }
 
-        // Set ItemDecoration to add overlap/margin between items
-        binding?.rcvAdvertise?.addItemDecoration(
-            OverlapItemDecoration(
-                resources.getDimensionPixelSize(R.dimen.over_lap_left),
-                resources.getDimensionPixelSize(R.dimen.over_lap_right),
-                isNewRelease = false
-            )
-        )
-
+    private fun initListComic() {
         val adapterComic = ComicAdapter()
         adapterComic.comics = listOf(
             Comic("Doraemon Tập 1", "doraemon", 19, R.drawable.doraemon0),
@@ -50,6 +45,21 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         binding?.rcvComics?.adapter = adapterComic
+    }
+
+    private fun initAdvertisement() {
+        binding?.rcvAdvertise?.adapter = AdvertiseAdapter()
+        val snapHelper = LinearSnapHelper()
+        snapHelper.attachToRecyclerView(binding?.rcvAdvertise)
+
+        // Set ItemDecoration to add overlap/margin between items
+        binding?.rcvAdvertise?.addItemDecoration(
+            OverlapItemDecoration(
+                resources.getDimensionPixelSize(R.dimen.over_lap_left),
+                resources.getDimensionPixelSize(R.dimen.over_lap_right),
+                isNewRelease = false
+            )
+        )
     }
 
     private fun setUpFullScreen() {

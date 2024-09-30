@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="5dp"
+    android:gravity="center"
+    android:id="@+id/viewCover">
+
+    <ImageView
+        android:id="@+id/imgComic"
+        android:layout_marginHorizontal="3dp"
+        android:layout_marginVertical="1dp"
+        android:layout_width="80dp"
+        android:layout_height="120dp"/>
+</LinearLayout>

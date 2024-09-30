@@ -6,69 +6,107 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context=".ComicActivity">
+    tools:context=".activity.ComicActivity">
+
+    <View
+        android:id="@+id/viewStatusBar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp" />
 
     <ImageView
         android:id="@+id/imgIntro"
-        android:layout_marginTop="25dp"
-        android:scaleType="fitXY"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_below="@id/viewStatusBar"
+        android:scaleType="fitXY" />
 
     <RelativeLayout
         android:id="@+id/viewComic"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_below="@id/viewStatusBar" />
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/viewController"
-        android:background="#7E111111"
-        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:paddingVertical="20dp">
+        android:layout_alignParentBottom="true"
+        android:background="#7E111111"
+        android:paddingVertical="30dp">
 
-        <Button
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcvPageComic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+        <ImageView
             android:id="@+id/back"
-            android:text="back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_marginTop="10dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rcvPageComic"
+            android:rotationY="180"
+            android:rotationX="180"/>
 
-        <Button
+        <TextView
+            android:id="@+id/txtIndex"
+            android:layout_marginTop="10dp"
+            android:text="Trang 1"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/rcvPageComic"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/back"
+            app:layout_constraintEnd_toStartOf="@id/next"/>
+
+        <ImageView
             android:id="@+id/next"
-            android:layout_marginStart="100dp"
-            android:text="next"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+            android:layout_marginTop="10dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rcvPageComic"
+            android:rotationX="180"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-<!--    <com.otaliastudios.zoom.ZoomLayout-->
-<!--        android:id="@+id/zoomLayout"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:scrollbars="vertical"-->
-<!--        app:transformation="none"-->
-<!--        app:transformationGravity="auto"-->
-<!--        app:alignment="center"-->
-<!--        app:overScrollHorizontal="false"-->
-<!--        app:overScrollVertical="false"-->
-<!--        app:overPinchable="false"-->
-<!--        app:horizontalPanEnabled="true"-->
-<!--        app:verticalPanEnabled="true"-->
-<!--        app:zoomEnabled="true"-->
-<!--        app:flingEnabled="true"-->
-<!--        app:scrollEnabled="true"-->
-<!--        app:oneFingerScrollEnabled="true"-->
-<!--        app:twoFingersScrollEnabled="true"-->
-<!--        app:threeFingersScrollEnabled="true"-->
-<!--        app:minZoom="1"-->
-<!--        app:minZoomType="zoom"-->
-<!--        app:maxZoom="2.5"-->
-<!--        app:maxZoomType="zoom"-->
-<!--        app:animationDuration="280"-->
-<!--        app:hasClickableChildren="false">-->
+    <!--    <com.otaliastudios.zoom.ZoomLayout-->
+    <!--        android:id="@+id/zoomLayout"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent"-->
+    <!--        android:scrollbars="vertical"-->
+    <!--        app:transformation="none"-->
+    <!--        app:transformationGravity="auto"-->
+    <!--        app:alignment="center"-->
+    <!--        app:overScrollHorizontal="false"-->
+    <!--        app:overScrollVertical="false"-->
+    <!--        app:overPinchable="false"-->
+    <!--        app:horizontalPanEnabled="true"-->
+    <!--        app:verticalPanEnabled="true"-->
+    <!--        app:zoomEnabled="true"-->
+    <!--        app:flingEnabled="true"-->
+    <!--        app:scrollEnabled="true"-->
+    <!--        app:oneFingerScrollEnabled="true"-->
+    <!--        app:twoFingersScrollEnabled="true"-->
+    <!--        app:threeFingersScrollEnabled="true"-->
+    <!--        app:minZoom="1"-->
+    <!--        app:minZoomType="zoom"-->
+    <!--        app:maxZoom="2.5"-->
+    <!--        app:maxZoomType="zoom"-->
+    <!--        app:animationDuration="280"-->
+    <!--        app:hasClickableChildren="false">-->
 
-<!--    </com.otaliastudios.zoom.ZoomLayout>-->
+    <!--    </com.otaliastudios.zoom.ZoomLayout>-->
 
 </RelativeLayout>
