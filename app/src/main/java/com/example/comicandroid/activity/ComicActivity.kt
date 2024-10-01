@@ -19,7 +19,7 @@ class ComicActivity : AppCompatActivity() {
 
     private var binding: ActivityComicBinding? = null
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -30,6 +30,7 @@ class ComicActivity : AppCompatActivity() {
 
         val comic = intent.getParcelableExtra<Comic>(MainActivity.OBJECT_COMIC)
         comic?.let { comic ->
+            binding?.viewController?.setOnTouchListener { _, _ -> true }
             binding?.viewController?.isVisible = false
             binding?.imgIntro?.setImageResource(comic.coverPhoto)
             binding?.root?.post {
@@ -37,7 +38,7 @@ class ComicActivity : AppCompatActivity() {
                 showControllerComic()
                 val comicView = PageCurlView(this@ComicActivity)
                 comicView.setOnCustomActionListener { isVisibleController ->
-                    binding?.txtIndex?.text = "Trang ${comicView.mIndex + 1}"
+//                    binding?.txtIndex?.text = "Trang ${comicView.mIndex + 1}"
                     binding?.viewController?.translateViewY(isVisibleController)
                 }
                 comicView.setOnChangeIndexPage { indexPage ->
@@ -52,6 +53,9 @@ class ComicActivity : AppCompatActivity() {
 
                 val pageComicAdapter = PageComicAdapter()
                 pageComicAdapter.comics = comicView.mPages
+                pageComicAdapter.onClickItem = {
+                    comicView.actionScrollTo(it)
+                }
                 binding?.rcvPageComic?.adapter = pageComicAdapter
 
                 binding?.back?.setOnClickListener {

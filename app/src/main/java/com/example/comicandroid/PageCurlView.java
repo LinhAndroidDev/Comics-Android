@@ -23,104 +23,158 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
- *
  * @author Moritz 'Moss' Wundke (b.thax.dcg@gmail.com)
- *
  */
 public class PageCurlView extends View {
 
-    /** Our Log tag */
+    /**
+     * Our Log tag
+     */
     private final static String TAG = "PageCurlView";
 
     // Debug text paint stuff
     private Paint mTextPaint;
     private TextPaint mTextPaintShadow;
 
-    /** Px / Draw call */
+    /**
+     * Px / Draw call
+     */
     private int mCurlSpeed;
 
-    /** Fixed update time used to create a smooth curl animation */
+    /**
+     * Fixed update time used to create a smooth curl animation
+     */
     private int mUpdateRate;
 
-    /** The initial offset for x and y axis movements */
+    /**
+     * The initial offset for x and y axis movements
+     */
     private int mInitialEdgeOffset;
 
-    /** The mode we will use */
+    /**
+     * The mode we will use
+     */
     private int mCurlMode;
 
-    /** Simple curl mode. Curl target will move only in one axis. */
+    /**
+     * Simple curl mode. Curl target will move only in one axis.
+     */
     public static final int CURLMODE_SIMPLE = 0;
 
-    /** Dynamic curl mode. Curl target will move on both X and Y axis. */
+    /**
+     * Dynamic curl mode. Curl target will move on both X and Y axis.
+     */
     public static final int CURLMODE_DYNAMIC = 1;
 
-    /** Enable/Disable debug mode */
+    /**
+     * Enable/Disable debug mode
+     */
     private boolean bEnableDebugMode = false;
 
-    /** The context which owns us */
+    /**
+     * The context which owns us
+     */
     private WeakReference<Context> mContext;
 
-    /** Handler used to auto flip time based */
+    /**
+     * Handler used to auto flip time based
+     */
     private FlipAnimationHandler mAnimationHandler;
 
-    /** Maximum radius a page can be flipped, by default it's the width of the view */
+    /**
+     * Maximum radius a page can be flipped, by default it's the width of the view
+     */
     private float mFlipRadius;
 
-    /** Point used to move */
+    /**
+     * Point used to move
+     */
     private Vector2D mMovement;
 
-    /** The finger position */
+    /**
+     * The finger position
+     */
     private Vector2D mFinger;
 
-    /** Movement point form the last frame */
+    /**
+     * Movement point form the last frame
+     */
     private Vector2D mOldMovement;
 
-    /** Page curl edge */
+    /**
+     * Page curl edge
+     */
     private Paint mCurlEdgePaint;
 
-    /** Our points used to define the current clipping paths in our draw call */
+    /**
+     * Our points used to define the current clipping paths in our draw call
+     */
     private Vector2D mA, mB, mC, mD, mE, mF, mOldF, mOrigin;
 
-    /** Left and top offset to be applied when drawing */
+    /**
+     * Left and top offset to be applied when drawing
+     */
     private int mCurrentLeft, mCurrentTop;
 
-    /** If false no draw call has been done */
+    /**
+     * If false no draw call has been done
+     */
     private boolean bViewDrawn;
 
-    /** Defines the flip direction that is currently considered */
+    /**
+     * Defines the flip direction that is currently considered
+     */
     private boolean bFlipRight;
 
     private boolean bFlipLeft;
 
-    /** If TRUE we are currently auto-flipping */
+    /**
+     * If TRUE we are currently auto-flipping
+     */
     private boolean bFlipping;
 
-    /** TRUE if the user moves the pages */
+    /**
+     * TRUE if the user moves the pages
+     */
     private boolean bUserMoves;
 
-    /** Used to control touch input blocking */
+    /**
+     * Used to control touch input blocking
+     */
     private boolean bBlockTouchInput = false;
 
-    /** Enable input after the next draw event */
+    /**
+     * Enable input after the next draw event
+     */
     private boolean bEnableInputAfterDraw = false;
 
-    /** LAGACY The current foreground */
+    /**
+     * LAGACY The current foreground
+     */
     private Bitmap mForeground;
 
-    /** LAGACY The current background */
+    /**
+     * LAGACY The current background
+     */
     private Bitmap mBackground;
 
-    /** LAGACY List of pages, this is just temporal */
+    /**
+     * LAGACY List of pages, this is just temporal
+     */
     public ArrayList<Bitmap> mPages;
 
-    /** LAGACY Current selected page */
+    /**
+     * LAGACY Current selected page
+     */
     public int mIndex = 0;
 
-    private Boolean isVisibleController = true;
+    public Boolean isVisibleController = true;
 
     private OnClickActionListener listener;
 
     private ChangeIndexPage changeIndexPage;
+
+    private boolean touchToFlipping;
 
     public interface OnClickActionListener {
         void onAction(Boolean isVisible);
@@ -142,11 +196,10 @@ public class PageCurlView extends View {
     /**
      * Inner class used to represent a 2D point.
      */
-    private class Vector2D
-    {
-        public float x,y;
-        public Vector2D(float x, float y)
-        {
+    private class Vector2D {
+        public float x, y;
+
+        public Vector2D(float x, float y) {
             this.x = x;
             this.y = y;
         }
@@ -154,7 +207,7 @@ public class PageCurlView extends View {
         @Override
         public String toString() {
             // TODO Auto-generated method stub
-            return "("+this.x+","+this.y+")";
+            return "(" + this.x + "," + this.y + ")";
         }
 
         public float length() {
@@ -174,15 +227,15 @@ public class PageCurlView extends View {
         }
 
         public Vector2D reverse() {
-            return new Vector2D(-x,-y);
+            return new Vector2D(-x, -y);
         }
 
         public Vector2D sum(Vector2D b) {
-            return new Vector2D(x+b.x,y+b.y);
+            return new Vector2D(x + b.x, y + b.y);
         }
 
         public Vector2D sub(Vector2D b) {
-            return new Vector2D(x-b.x,y-b.y);
+            return new Vector2D(x - b.x, y - b.y);
         }
 
         public float dot(Vector2D vec) {
@@ -218,7 +271,7 @@ public class PageCurlView extends View {
         }
 
         public Vector2D mult(float scalar) {
-            return new Vector2D(x*scalar,y*scalar);
+            return new Vector2D(x * scalar, y * scalar);
         }
     }
 
@@ -228,7 +281,7 @@ public class PageCurlView extends View {
     class FlipAnimationHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            PageCurlView.this.FlipAnimationStep(false);
+            PageCurlView.this.FlipAnimationStep();
         }
 
         public void sleep(long millis) {
@@ -239,6 +292,7 @@ public class PageCurlView extends View {
 
     /**
      * Base
+     *
      * @param context
      */
     public PageCurlView(Context context) {
@@ -305,9 +359,9 @@ public class PageCurlView extends View {
         setFocusable(true);
         setFocusableInTouchMode(true);
 
-        mMovement =  new Vector2D(0,0);
-        mFinger = new Vector2D(0,0);
-        mOldMovement = new Vector2D(0,0);
+        mMovement = new Vector2D(0, 0);
+        mFinger = new Vector2D(0, 0);
+        mOldMovement = new Vector2D(0, 0);
 
         // Create our curl animation handler
         mAnimationHandler = new FlipAnimationHandler();
@@ -362,8 +416,7 @@ public class PageCurlView extends View {
     /**
      * Reset points to it's initial clip edge state
      */
-    public void ResetClipEdge()
-    {
+    public void ResetClipEdge() {
         // Set our base movement
         mMovement.x = mInitialEdgeOffset;
         mMovement.y = mInitialEdgeOffset;
@@ -395,73 +448,73 @@ public class PageCurlView extends View {
 
     /**
      * See if the current curl mode is dynamic
+     *
      * @return TRUE if the mode is CURLMODE_DYNAMIC, FALSE otherwise
      */
-    public boolean IsCurlModeDynamic()
-    {
+    public boolean IsCurlModeDynamic() {
         return mCurlMode == CURLMODE_DYNAMIC;
     }
 
     /**
      * Set the curl speed.
+     *
      * @param curlSpeed - New speed in px/frame
      * @throws IllegalArgumentException if curlspeed < 1
      */
-    public void SetCurlSpeed(int curlSpeed)
-    {
-        if ( curlSpeed < 1 )
+    public void SetCurlSpeed(int curlSpeed) {
+        if (curlSpeed < 1)
             throw new IllegalArgumentException("curlSpeed must be greated than 0");
         mCurlSpeed = curlSpeed;
     }
 
     /**
      * Get the current curl speed
+     *
      * @return int - Curl speed in px/frame
      */
-    public int GetCurlSpeed()
-    {
+    public int GetCurlSpeed() {
         return mCurlSpeed;
     }
 
     /**
      * Set the update rate for the curl animation
+     *
      * @param updateRate - Fixed animation update rate in fps
      * @throws IllegalArgumentException if updateRate < 1
      */
-    public void SetUpdateRate(int updateRate)
-    {
-        if ( updateRate < 1 )
+    public void SetUpdateRate(int updateRate) {
+        if (updateRate < 1)
             throw new IllegalArgumentException("updateRate must be greated than 0");
         mUpdateRate = updateRate;
     }
 
     /**
      * Get the current animation update rate
+     *
      * @return int - Fixed animation update rate in fps
      */
-    public int GetUpdateRate()
-    {
+    public int GetUpdateRate() {
         return mUpdateRate;
     }
 
     /**
      * Set the initial pixel offset for the curl edge
+     *
      * @param initialEdgeOffset - px offset for curl edge
      * @throws IllegalArgumentException if initialEdgeOffset < 0
      */
-    public void SetInitialEdgeOffset(int initialEdgeOffset)
-    {
-        if ( initialEdgeOffset < 0 )
+    public void SetInitialEdgeOffset(int initialEdgeOffset) {
+        if (initialEdgeOffset < 0)
             throw new IllegalArgumentException("initialEdgeOffset can not negative");
         mInitialEdgeOffset = initialEdgeOffset;
     }
 
     /**
      * Get the initial pixel offset for the curl edge
+     *
      * @return int - px
      */
-    public int GetInitialEdgeOffset()
-    {
+    public int GetInitialEdgeOffset() {
         return mInitialEdgeOffset;
     }
 
@@ -475,15 +528,15 @@ public class PageCurlView extends View {
      * <tr><td><code>{@link #CURLMODE_SIMPLE com.dcg.pagecurl:CURLMODE_SIMPLE}</code></td><td>Curl target will move only in one axis.</td></tr>
      * <tr><td><code>{@link #CURLMODE_DYNAMIC com.dcg.pagecurl:CURLMODE_DYNAMIC}</code></td><td>Curl target will move on both X and Y axis.</td></tr>
      * </table>
-     * @see #CURLMODE_SIMPLE
-     * @see #CURLMODE_DYNAMIC
+     *
      * @param curlMode
      * @throws IllegalArgumentException if curlMode is invalid
+     * @see #CURLMODE_SIMPLE
+     * @see #CURLMODE_DYNAMIC
      */
-    public void SetCurlMode(int curlMode)
-    {
-        if ( curlMode != CURLMODE_SIMPLE &&
-                curlMode != CURLMODE_DYNAMIC )
+    public void SetCurlMode(int curlMode) {
+        if (curlMode != CURLMODE_SIMPLE &&
+                curlMode != CURLMODE_DYNAMIC)
             throw new IllegalArgumentException("Invalid curlMode");
         mCurlMode = curlMode;
     }
@@ -498,30 +551,30 @@ public class PageCurlView extends View {
      * <tr><td><code>{@link #CURLMODE_SIMPLE com.dcg.pagecurl:CURLMODE_SIMPLE}</code></td><td>Curl target will move only in one axis.</td></tr>
      * <tr><td><code>{@link #CURLMODE_DYNAMIC com.dcg.pagecurl:CURLMODE_DYNAMIC}</code></td><td>Curl target will move on both X and Y axis.</td></tr>
      * </table>
+     *
+     * @return int - current curl mode
      * @see #CURLMODE_SIMPLE
      * @see #CURLMODE_DYNAMIC
-     * @return int - current curl mode
      */
-    public int GetCurlMode()
-    {
+    public int GetCurlMode() {
         return mCurlMode;
     }
 
     /**
      * Enable debug mode. This will draw a lot of data in the view so you can track what is happening
+     *
      * @param bFlag - boolean flag
      */
-    public void SetEnableDebugMode(boolean bFlag)
-    {
+    public void SetEnableDebugMode(boolean bFlag) {
         bEnableDebugMode = bFlag;
     }
 
     /**
      * Check if we are currently in debug mode.
+     *
      * @return boolean - If TRUE debug mode is on, FALSE otherwise.
      */
-    public boolean IsDebugModeEnabled()
-    {
+    public boolean IsDebugModeEnabled() {
         return bEnableDebugMode;
     }
 
@@ -538,6 +591,7 @@ public class PageCurlView extends View {
 
     /**
      * Determines the width of this view
+     *
      * @param measureSpec A measureSpec packed into an int
      * @return The width of the view, honoring constraints from measureSpec
      */
@@ -559,6 +613,7 @@ public class PageCurlView extends View {
 
     /**
      * Determines the height of this view
+     *
      * @param measureSpec A measureSpec packed into an int
      * @return The height of the view, honoring constraints from measureSpec
      */
@@ -592,7 +647,6 @@ public class PageCurlView extends View {
     // Curling. This handles touch events, the actual curling
     // implementations and so on.
     //---------------------------------------------------------------
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (!bBlockTouchInput) {
@@ -609,6 +663,7 @@ public class PageCurlView extends View {
                     mOldMovement.y = mFinger.y;
 
                     // If we moved over the half of the display flip to next
+                    touchToFlipping = true;
                     if (mOldMovement.x > (width >> 1)) {
                         mMovement.x = mInitialEdgeOffset;
                         mMovement.y = mInitialEdgeOffset;
@@ -616,7 +671,7 @@ public class PageCurlView extends View {
                         // Set the right movement flag
                         bFlipRight = true;
                         bFlipLeft = false;
-                    } else if(mIndex > 0) {
+                    } else if (mIndex > 0) {
                         // Set the left movement flag
                         bFlipRight = false;
                         bFlipLeft = true;
@@ -625,24 +680,24 @@ public class PageCurlView extends View {
                         previousView();
 
                         // Set new movement
-                        mMovement.x = IsCurlModeDynamic()?width<<1:width;
+                        mMovement.x = IsCurlModeDynamic() ? width << 1 : width;
                         mMovement.y = mInitialEdgeOffset;
                     }
 
                     break;
                 case MotionEvent.ACTION_UP:
-                    if(mIndex < mPages.size() - 1) {
-                        bUserMoves=false;
-                        bFlipping=true;
-                        FlipAnimationStep(false);
+                    if (mIndex < mPages.size() - 1) {
+                        bUserMoves = false;
+                        bFlipping = true;
+                        FlipAnimationStep();
                     } else {
                         isVisibleController = !isVisibleController;
                         listener.onAction(isVisibleController);
                     }
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    if(mIndex < mPages.size() - 1) {
-                        bUserMoves=true;
+                    if (mIndex < mPages.size() - 1) {
+                        bUserMoves = true;
 
                         // Get movement
                         mMovement.x -= mFinger.x - mOldMovement.x;
@@ -650,19 +705,19 @@ public class PageCurlView extends View {
                         mMovement = CapMovement(mMovement, true);
 
                         // Make sure the y value get's locked at a nice level
-                        if ( mMovement.y  <= 1 )
+                        if (mMovement.y <= 1)
                             mMovement.y = 1;
 
                         // Get movement direction
-                        if (mFinger.x < mOldMovement.x ) {
+                        if (mFinger.x < mOldMovement.x) {
                             bFlipRight = true;
                         } else {
                             bFlipRight = false;
                         }
 
                         // Save old movement values
-                        mOldMovement.x  = mFinger.x;
-                        mOldMovement.y  = mFinger.y;
+                        mOldMovement.x = mFinger.x;
+                        mOldMovement.y = mFinger.y;
 
                         // Force a new draw call
                         DoPageCurl();
@@ -681,28 +736,24 @@ public class PageCurlView extends View {
      * Make sure we never move too much, and make sure that if we
      * move too much to add a displacement so that the movement will
      * be still in our radius.
+     *
      * @param bMaintainMoveDir - Cap movement but do not change the
-     * current movement direction
+     *                         current movement direction
      * @return Corrected point
      */
-    private Vector2D CapMovement(Vector2D point, boolean bMaintainMoveDir)
-    {
+    private Vector2D CapMovement(Vector2D point, boolean bMaintainMoveDir) {
         // Make sure we never ever move too much
-        if (point.distance(mOrigin) > mFlipRadius)
-        {
-            if ( bMaintainMoveDir )
-            {
+        if (point.distance(mOrigin) > mFlipRadius) {
+            if (bMaintainMoveDir) {
                 // Maintain the direction
                 point = mOrigin.sum(point.sub(mOrigin).normalize().mult(mFlipRadius));
-            }
-            else
-            {
+            } else {
                 // Change direction
-                if ( point.x > (mOrigin.x+mFlipRadius))
-                    point.x = (mOrigin.x+mFlipRadius);
-                else if ( point.x < (mOrigin.x-mFlipRadius) )
-                    point.x = (mOrigin.x-mFlipRadius);
-                point.y = (float) (Math.sin(Math.acos(Math.abs(point.x-mOrigin.x)/mFlipRadius))*mFlipRadius);
+                if (point.x > (mOrigin.x + mFlipRadius))
+                    point.x = (mOrigin.x + mFlipRadius);
+                else if (point.x < (mOrigin.x - mFlipRadius))
+                    point.x = (mOrigin.x - mFlipRadius);
+                point.y = (float) (Math.sin(Math.acos(Math.abs(point.x - mOrigin.x) / mFlipRadius)) * mFlipRadius);
             }
         }
         return point;
@@ -711,8 +762,8 @@ public class PageCurlView extends View {
     /**
      * Execute a step of the flip animation
      */
-    public void FlipAnimationStep(boolean actionFromController) {
-        if ( !bFlipping )
+    public void FlipAnimationStep() {
+        if (!bFlipping)
             return;
 
         int width = getWidth();
@@ -722,7 +773,7 @@ public class PageCurlView extends View {
 
         // Handle speed
         float curlSpeed = mCurlSpeed;
-        if ( !bFlipRight )
+        if (!bFlipRight)
             curlSpeed *= -1;
 
         // Move us
@@ -738,21 +789,17 @@ public class PageCurlView extends View {
             if (bFlipRight) {
 //                SwapViews();
                 nextView();
-                if(actionFromController) {
-                    if(isVisibleController) {
-                        isVisibleController = false;
-                        listener.onAction(false);
-                    }
+                if (isVisibleController && touchToFlipping) {
+                    isVisibleController = false;
+                    listener.onAction(false);
                 }
-            } else  {
-                if(actionFromController) {
-                    if (mOldMovement.x > (width >> 1)) {
-                        isVisibleController = !isVisibleController;
-                        listener.onAction(isVisibleController);
-                    } else if(isVisibleController && bFlipLeft) {
-                        isVisibleController = false;
-                        listener.onAction(false);
-                    }
+            } else if (touchToFlipping) {
+                if (mOldMovement.x > (width >> 1) && !bFlipLeft) {
+                    isVisibleController = !isVisibleController;
+                    listener.onAction(isVisibleController);
+                } else if (isVisibleController && bFlipLeft) {
+                    isVisibleController = false;
+                    listener.onAction(false);
                 }
             }
             bFlipLeft = false;
@@ -763,9 +810,7 @@ public class PageCurlView extends View {
 
             // Enable touch input after the next draw event
             bEnableInputAfterDraw = true;
-        }
-        else
-        {
+        } else {
             mAnimationHandler.sleep(mUpdateRate);
         }
 
@@ -776,16 +821,15 @@ public class PageCurlView extends View {
     /**
      * Do the page curl depending on the methods we are using
      */
-    private void DoPageCurl()
-    {
-        if(bFlipping){
-            if ( IsCurlModeDynamic() )
+    private void DoPageCurl() {
+        if (bFlipping) {
+            if (IsCurlModeDynamic())
                 doDynamicCurl();
             else
                 doSimpleCurl();
 
         } else {
-            if ( IsCurlModeDynamic() )
+            if (IsCurlModeDynamic())
                 doDynamicCurl();
             else
                 doSimpleCurl();
@@ -829,9 +873,7 @@ public class PageCurlView extends View {
         if (mA.x > width / 2) {
             mE.x = mD.x;
             mE.y = mD.y;
-        }
-        else
-        {
+        } else {
             // So get E
             mE.x = (float) (mD.x + _cos * (width - mD.x));
             mE.y = (float) -(_sin * (width - mD.x));
@@ -847,18 +889,18 @@ public class PageCurlView extends View {
 
         // F will follow the finger, we add a small displacement
         // So that we can see the edge
-        mF.x = width - mMovement.x+0.1f;
-        mF.y = height - mMovement.y+0.1f;
+        mF.x = width - mMovement.x + 0.1f;
+        mF.y = height - mMovement.y + 0.1f;
 
         // Set min points
-        if(mA.x==0) {
-            mF.x= Math.min(mF.x, mOldF.x);
-            mF.y= Math.max(mF.y, mOldF.y);
+        if (mA.x == 0) {
+            mF.x = Math.min(mF.x, mOldF.x);
+            mF.y = Math.max(mF.y, mOldF.y);
         }
 
         // Get diffs
-        float deltaX = width-mF.x;
-        float deltaY = height-mF.y;
+        float deltaX = width - mF.x;
+        float deltaY = height - mF.y;
 
         float BH = (float) (Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 2);
         double tangAlpha = deltaY / deltaX;
@@ -872,8 +914,8 @@ public class PageCurlView extends View {
         mD.y = (float) (height - (BH / _sin));
         mD.x = width;
 
-        mA.x = Math.max(0,mA.x);
-        if(mA.x==0) {
+        mA.x = Math.max(0, mA.x);
+        if (mA.x == 0) {
             mOldF.x = mF.x;
             mOldF.y = mF.y;
         }
@@ -905,11 +947,11 @@ public class PageCurlView extends View {
      */
     public void nextView() {
         int foreIndex = mIndex + 1;
-        if(foreIndex >= mPages.size()) {
+        if (foreIndex >= mPages.size()) {
             foreIndex = 0;
         }
         int backIndex = foreIndex + 1;
-        if(backIndex >= mPages.size()) {
+        if (backIndex >= mPages.size()) {
             backIndex = 0;
         }
         mIndex = foreIndex;
@@ -922,26 +964,34 @@ public class PageCurlView extends View {
     public void previousView() {
         int backIndex = mIndex;
         int foreIndex = backIndex - 1;
-        if(foreIndex < 0) {
-            foreIndex = mPages.size()-1;
+        if (foreIndex < 0) {
+            foreIndex = mPages.size() - 1;
         }
         mIndex = foreIndex;
         setViews(foreIndex, backIndex);
     }
 
+    /**
+     * Handle next view from controller
+     */
     public void actionNextView() {
-        if(mIndex < mPages.size() - 1) {
+        if (mIndex < mPages.size() - 1) {
+            touchToFlipping = false;
             bFlipRight = true;
             bFlipLeft = false;
-            bUserMoves=false;
-            bFlipping=true;
-            FlipAnimationStep(true);
+            bUserMoves = false;
+            bFlipping = true;
+            FlipAnimationStep();
         }
     }
 
+    /**
+     * Handle back view from controller
+     */
     public void actionBackView() {
-        if(mIndex > 0) {
+        if (mIndex > 0) {
             // Set the left movement flag
+            touchToFlipping = false;
             bFlipRight = false;
             bFlipLeft = true;
 
@@ -949,17 +999,54 @@ public class PageCurlView extends View {
             previousView();
 
             int width = getWidth();
-            mMovement.x = IsCurlModeDynamic()?width<<1:width;
+            mMovement.x = IsCurlModeDynamic() ? width << 1 : width;
             mMovement.y = mInitialEdgeOffset;
 
-            bUserMoves=false;
-            bFlipping=true;
-            FlipAnimationStep(true);
+            bUserMoves = false;
+            bFlipping = true;
+            FlipAnimationStep();
         }
     }
 
     /**
+     * Handle scroll to page from select item in list page
+     *
+     * @param index
+     */
+    public void actionScrollTo(int index) {
+//        if (index < mIndex) {
+//            int backIndex = index + 1;
+//            int foreIndex = backIndex - 1;
+//            if(foreIndex < 0) {
+//                foreIndex = mPages.size()-1;
+//            }
+//            mIndex = foreIndex;
+//            setViews(foreIndex, backIndex);
+//        } else if (index > mIndex) {
+//            int foreIndex = index;
+//            if(foreIndex >= mPages.size()) {
+//                foreIndex = 0;
+//            }
+//            int backIndex = foreIndex + 1;
+//            if(backIndex >= mPages.size()) {
+//                backIndex = 0;
+//            }
+//            mIndex = foreIndex;
+//            setViews(foreIndex, backIndex);
+//        }
+        int foreIndex = index;
+        int backIndex = foreIndex + 1;
+        if (backIndex >= mPages.size()) {
+            backIndex = 0;
+        }
+        mIndex = foreIndex;
+        setViews(foreIndex, backIndex);
+        this.invalidate();
+    }
+
+    /**
      * Set current fore and background
+     *
      * @param foreground - Foreground view index
      * @param background - Background view index
      */
@@ -983,7 +1070,7 @@ public class PageCurlView extends View {
         //canvas.translate(mCurrentLeft, mCurrentTop);
 
         // We need to initialize all size data when we first draw the view
-        if ( !bViewDrawn ) {
+        if (!bViewDrawn) {
             bViewDrawn = true;
             onFirstDrawEvent(canvas);
         }
@@ -1013,12 +1100,11 @@ public class PageCurlView extends View {
         drawCurlEdge(canvas);
 
         // Draw any debug info once we are done
-        if ( bEnableDebugMode )
+        if (bEnableDebugMode)
             drawDebug(canvas);
 
         // Check if we can re-enable input
-        if ( bEnableInputAfterDraw )
-        {
+        if (bEnableInputAfterDraw) {
             bBlockTouchInput = false;
             bEnableInputAfterDraw = false;
         }
@@ -1029,6 +1115,7 @@ public class PageCurlView extends View {
 
     /**
      * Called on the first draw event of the view
+     *
      * @param canvas
      */
     protected void onFirstDrawEvent(Canvas canvas) {
@@ -1041,11 +1128,12 @@ public class PageCurlView extends View {
 
     /**
      * Draw the foreground
+     *
      * @param canvas
      * @param rect
      * @param paint
      */
-    private void drawForeground( Canvas canvas, Rect rect, Paint paint ) {
+    private void drawForeground(Canvas canvas, Rect rect, Paint paint) {
         canvas.drawBitmap(mForeground, null, rect, paint);
 
         // Draw the page number (first page is 1 in real life :D
@@ -1055,6 +1143,7 @@ public class PageCurlView extends View {
 
     /**
      * Create a Path used as a mask to draw the background page
+     *
      * @return
      */
     private Path createBackgroundPath() {
@@ -1069,11 +1158,12 @@ public class PageCurlView extends View {
 
     /**
      * Draw the background image.
+     *
      * @param canvas
      * @param rect
      * @param paint
      */
-    private void drawBackground( Canvas canvas, Rect rect, Paint paint ) {
+    private void drawBackground(Canvas canvas, Rect rect, Paint paint) {
         Path mask = createBackgroundPath();
 
         // Save current canvas so we do not mess it up
@@ -1090,6 +1180,7 @@ public class PageCurlView extends View {
 
     /**
      * Creates a path used to draw the curl edge in.
+     *
      * @return
      */
     private Path createCurlEdgePath() {
@@ -1104,24 +1195,24 @@ public class PageCurlView extends View {
 
     /**
      * Draw the curl page edge
+     *
      * @param canvas
      */
-    private void drawCurlEdge( Canvas canvas )
-    {
+    private void drawCurlEdge(Canvas canvas) {
         Path path = createCurlEdgePath();
         canvas.drawPath(path, mCurlEdgePaint);
     }
 
     /**
      * Draw page num (let this be a bit more custom)
+     *
      * @param canvas
      * @param pageNum
      */
-    private void drawPageNum(Canvas canvas, int pageNum)
-    {
+    private void drawPageNum(Canvas canvas, int pageNum) {
         mTextPaint.setColor(Color.WHITE);
-        String pageNumText = "- "+pageNum+" -";
-        drawCentered(canvas, pageNumText,canvas.getHeight()-mTextPaint.getTextSize()-5,mTextPaint,mTextPaintShadow);
+        String pageNumText = "- " + pageNum + " -";
+        drawCentered(canvas, pageNumText, canvas.getHeight() - mTextPaint.getTextSize() - 5, mTextPaint, mTextPaintShadow);
     }
 
     //---------------------------------------------------------------
@@ -1132,33 +1223,33 @@ public class PageCurlView extends View {
      * Draw a text with a nice shadow
      */
     public static void drawTextShadowed(Canvas canvas, String text, float x, float y, Paint textPain, Paint shadowPaint) {
-        canvas.drawText(text, x-1, y, shadowPaint);
-        canvas.drawText(text, x, y+1, shadowPaint);
-        canvas.drawText(text, x+1, y, shadowPaint);
-        canvas.drawText(text, x, y-1, shadowPaint);
+        canvas.drawText(text, x - 1, y, shadowPaint);
+        canvas.drawText(text, x, y + 1, shadowPaint);
+        canvas.drawText(text, x + 1, y, shadowPaint);
+        canvas.drawText(text, x, y - 1, shadowPaint);
         canvas.drawText(text, x, y, textPain);
     }
 
     /**
      * Draw a text with a nice shadow centered in the X axis
+     *
      * @param canvas
      * @param text
      * @param y
      * @param textPain
      * @param shadowPaint
      */
-    public static void drawCentered(Canvas canvas, String text, float y, Paint textPain, Paint shadowPaint)
-    {
-        float posx = (canvas.getWidth() - textPain.measureText(text))/2;
+    public static void drawCentered(Canvas canvas, String text, float y, Paint textPain, Paint shadowPaint) {
+        float posx = (canvas.getWidth() - textPain.measureText(text)) / 2;
         drawTextShadowed(canvas, text, posx, y, textPain, shadowPaint);
     }
 
     /**
      * Draw debug info
+     *
      * @param canvas
      */
-    private void drawDebug(Canvas canvas)
-    {
+    private void drawDebug(Canvas canvas) {
         float posX = 10;
         float posY = 20;
 
@@ -1181,15 +1272,15 @@ public class PageCurlView extends View {
         paint.setColor(Color.RED);
         canvas.drawLine(mOrigin.x, mOrigin.y, mMovement.x, mMovement.y, paint);
 
-        posY = debugDrawPoint(canvas,"A",mA,Color.RED,posX,posY);
-        posY = debugDrawPoint(canvas,"B",mB,Color.GREEN,posX,posY);
-        posY = debugDrawPoint(canvas,"C",mC,Color.BLUE,posX,posY);
-        posY = debugDrawPoint(canvas,"D",mD,Color.CYAN,posX,posY);
-        posY = debugDrawPoint(canvas,"E",mE,Color.YELLOW,posX,posY);
-        posY = debugDrawPoint(canvas,"F",mF,Color.LTGRAY,posX,posY);
-        posY = debugDrawPoint(canvas,"Mov",mMovement,Color.DKGRAY,posX,posY);
-        posY = debugDrawPoint(canvas,"Origin",mOrigin,Color.MAGENTA,posX,posY);
-        posY = debugDrawPoint(canvas,"Finger",mFinger,Color.GREEN,posX,posY);
+        posY = debugDrawPoint(canvas, "A", mA, Color.RED, posX, posY);
+        posY = debugDrawPoint(canvas, "B", mB, Color.GREEN, posX, posY);
+        posY = debugDrawPoint(canvas, "C", mC, Color.BLUE, posX, posY);
+        posY = debugDrawPoint(canvas, "D", mD, Color.CYAN, posX, posY);
+        posY = debugDrawPoint(canvas, "E", mE, Color.YELLOW, posX, posY);
+        posY = debugDrawPoint(canvas, "F", mF, Color.LTGRAY, posX, posY);
+        posY = debugDrawPoint(canvas, "Mov", mMovement, Color.DKGRAY, posX, posY);
+        posY = debugDrawPoint(canvas, "Origin", mOrigin, Color.MAGENTA, posX, posY);
+        posY = debugDrawPoint(canvas, "Finger", mFinger, Color.GREEN, posX, posY);
 
         // Draw some curl stuff (Just some test)
 		/*
@@ -1214,17 +1305,17 @@ public class PageCurlView extends View {
     }
 
     private float debugDrawPoint(Canvas canvas, String name, Vector2D point, int color, float posX, float posY) {
-        return debugDrawPoint(canvas,name+" "+point.toString(),point.x, point.y, color, posX, posY);
+        return debugDrawPoint(canvas, name + " " + point.toString(), point.x, point.y, color, posX, posY);
     }
 
     private float debugDrawPoint(Canvas canvas, String name, float X, float Y, int color, float posX, float posY) {
         mTextPaint.setColor(color);
-        drawTextShadowed(canvas,name,posX , posY, mTextPaint,mTextPaintShadow);
+        drawTextShadowed(canvas, name, posX, posY, mTextPaint, mTextPaintShadow);
         Paint paint = new Paint();
         paint.setStrokeWidth(5);
         paint.setColor(color);
         canvas.drawPoint(X, Y, paint);
-        return posY+15;
+        return posY + 15;
     }
 
 }
