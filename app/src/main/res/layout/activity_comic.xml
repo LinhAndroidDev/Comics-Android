@@ -38,47 +38,47 @@
             android:id="@+id/rcvPageComic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/back"
-            android:layout_marginTop="10dp"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_marginStart="15dp"
+            android:layout_marginTop="10dp"
+            android:rotationX="180"
+            android:rotationY="180"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rcvPageComic"
-            android:rotationY="180"
-            android:rotationX="180"/>
+            app:layout_constraintTop_toBottomOf="@id/rcvPageComic" />
 
         <TextView
             android:id="@+id/txtIndex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="Trang 1"
             android:textColor="@color/white"
             android:textSize="16sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/rcvPageComic"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/next"
             app:layout_constraintStart_toEndOf="@id/back"
-            app:layout_constraintEnd_toStartOf="@id/next"/>
+            app:layout_constraintTop_toBottomOf="@id/rcvPageComic" />
 
         <ImageView
             android:id="@+id/next"
-            android:layout_marginTop="10dp"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="15dp"
+            android:rotationX="180"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rcvPageComic"
-            android:rotationX="180"/>
+            app:layout_constraintTop_toBottomOf="@id/rcvPageComic" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!--    <com.otaliastudios.zoom.ZoomLayout-->

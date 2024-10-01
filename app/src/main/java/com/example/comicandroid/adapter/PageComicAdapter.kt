@@ -13,7 +13,8 @@ class PageComicAdapter : RecyclerView.Adapter<PageComicAdapter.ComicViewHolder>(
     private var selectPosition = 0
     var onClickItem: ((Int) -> Unit)? = null
 
-    inner class ComicViewHolder(private val v: ItemPageComicBinding) : RecyclerView.ViewHolder(v.root) {
+    inner class ComicViewHolder(private val v: ItemPageComicBinding) :
+        RecyclerView.ViewHolder(v.root) {
         fun bind(comic: Bitmap, isSelected: Boolean = false) {
             Glide.with(v.root).load(comic).into(v.imgComic)
             v.viewCover.isSelected = isSelected
@@ -28,7 +29,10 @@ class PageComicAdapter : RecyclerView.Adapter<PageComicAdapter.ComicViewHolder>(
         return ComicViewHolder(v)
     }
 
-    override fun onBindViewHolder(holder: PageComicAdapter.ComicViewHolder, @SuppressLint("RecyclerView") position: Int) {
+    override fun onBindViewHolder(
+        holder: PageComicAdapter.ComicViewHolder,
+        @SuppressLint("RecyclerView") position: Int
+    ) {
         val isSelected = selectPosition == position
         holder.bind(comics[position], isSelected)
         holder.itemView.setOnClickListener {
