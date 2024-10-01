@@ -38,7 +38,6 @@ class ComicActivity : AppCompatActivity() {
                 showControllerComic()
                 val comicView = PageCurlView(this@ComicActivity)
                 comicView.setOnCustomActionListener { isVisibleController ->
-//                    binding?.txtIndex?.text = "Trang ${comicView.mIndex + 1}"
                     binding?.viewController?.translateViewY(isVisibleController)
                 }
                 comicView.setOnChangeIndexPage { indexPage ->
