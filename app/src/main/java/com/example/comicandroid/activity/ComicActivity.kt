@@ -41,6 +41,9 @@ class ComicActivity : AppCompatActivity() {
                 showControllerComic()
                 val comicView = PageCurlView(this@ComicActivity)
                 comicView.setOnCustomActionListener { isVisibleController ->
+                    if(isVisibleController) {
+                        binding?.rcvPageComic?.scrollToPosition(comicView.mIndex)
+                    }
                     binding?.viewController?.translateViewY(isVisibleController)
                 }
                 comicView.setOnChangeIndexPage { indexPage ->
