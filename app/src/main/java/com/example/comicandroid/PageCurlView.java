@@ -22,6 +22,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 /**
  * @author Moritz 'Moss' Wundke (b.thax.dcg@gmail.com)
  */
@@ -112,11 +114,6 @@ public class PageCurlView extends View {
     private Vector2D mA, mB, mC, mD, mE, mF, mOldF, mOrigin;
 
     /**
-     * Left and top offset to be applied when drawing
-     */
-    private int mCurrentLeft, mCurrentTop;
-
-    /**
      * If false no draw call has been done
      */
     private boolean bViewDrawn;
@@ -132,11 +129,6 @@ public class PageCurlView extends View {
      * If TRUE we are currently auto-flipping
      */
     private boolean bFlipping;
-
-    /**
-     * TRUE if the user moves the pages
-     */
-    private boolean bUserMoves;
 
     /**
      * Used to control touch input blocking
@@ -196,7 +188,7 @@ public class PageCurlView extends View {
     /**
      * Inner class used to represent a 2D point.
      */
-    private class Vector2D {
+    private static class Vector2D {
         public float x, y;
 
         public Vector2D(float x, float y) {
@@ -204,6 +196,7 @@ public class PageCurlView extends View {
             this.y = y;
         }
 
+        @NonNull
         @Override
         public String toString() {
             // TODO Auto-generated method stub
@@ -280,7 +273,7 @@ public class PageCurlView extends View {
      */
     class FlipAnimationHandler extends Handler {
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NonNull Message msg) {
             PageCurlView.this.FlipAnimationStep();
         }
 
@@ -292,8 +285,6 @@ public class PageCurlView extends View {
 
     /**
      * Base
-     *
-     * @param context
      */
     public PageCurlView(Context context) {
         super(context);
@@ -336,7 +327,7 @@ public class PageCurlView extends View {
     /**
      * Initialize the view
      */
-    private final void init(Context context) {
+    private void init(Context context) {
         // Foreground text paint
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
@@ -350,7 +341,7 @@ public class PageCurlView extends View {
         mTextPaintShadow.setColor(0x00000000);
 
         // Cache the context
-        mContext = new WeakReference<Context>(context);
+        mContext = new WeakReference<>(context);
 
         // Base padding
         setPadding(3, 3, 3, 3);
@@ -382,8 +373,7 @@ public class PageCurlView extends View {
         // LEGACY PAGE HANDLING!
 
         // Create pages
-        mPages = new ArrayList<Bitmap>();
-//        GetListImageBitmap(context, "doraemon", 19);
+        mPages = new ArrayList<>();
     }
 
     /**
@@ -529,7 +519,6 @@ public class PageCurlView extends View {
      * <tr><td><code>{@link #CURLMODE_DYNAMIC com.dcg.pagecurl:CURLMODE_DYNAMIC}</code></td><td>Curl target will move on both X and Y axis.</td></tr>
      * </table>
      *
-     * @param curlMode
      * @throws IllegalArgumentException if curlMode is invalid
      * @see #CURLMODE_SIMPLE
      * @see #CURLMODE_DYNAMIC
@@ -596,17 +585,8 @@ public class PageCurlView extends View {
      * @return The width of the view, honoring constraints from measureSpec
      */
     private int measureWidth(int measureSpec) {
-        int result = 0;
-        int specMode = MeasureSpec.getMode(measureSpec);
-        int specSize = MeasureSpec.getSize(measureSpec);
-
-        if (specMode == MeasureSpec.EXACTLY) {
-            // We were told how big to be
-            result = specSize;
-        } else {
-            // Measure the text
-            result = specSize;
-        }
+        int result;
+        result = MeasureSpec.getSize(measureSpec);
 
         return result;
     }
@@ -618,17 +598,9 @@ public class PageCurlView extends View {
      * @return The height of the view, honoring constraints from measureSpec
      */
     private int measureHeight(int measureSpec) {
-        int result = 0;
-        int specMode = MeasureSpec.getMode(measureSpec);
-        int specSize = MeasureSpec.getSize(measureSpec);
+        int result;
+        result = MeasureSpec.getSize(measureSpec);
 
-        if (specMode == MeasureSpec.EXACTLY) {
-            // We were told how big to be
-            result = specSize;
-        } else {
-            // Measure the text (beware: ascent is a negative number)
-            result = specSize;
-        }
         return result;
     }
 
@@ -647,6 +619,7 @@ public class PageCurlView extends View {
     // Curling. This handles touch events, the actual curling
     // implementations and so on.
     //---------------------------------------------------------------
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (!bBlockTouchInput) {
@@ -687,7 +660,6 @@ public class PageCurlView extends View {
                     break;
                 case MotionEvent.ACTION_UP:
                     if (mIndex < mPages.size() - 1) {
-                        bUserMoves = false;
                         bFlipping = true;
                         FlipAnimationStep();
                     } else {
@@ -697,7 +669,6 @@ public class PageCurlView extends View {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (mIndex < mPages.size() - 1) {
-                        bUserMoves = true;
 
                         // Get movement
                         mMovement.x -= mFinger.x - mOldMovement.x;
@@ -709,11 +680,7 @@ public class PageCurlView extends View {
                             mMovement.y = 1;
 
                         // Get movement direction
-                        if (mFinger.x < mOldMovement.x) {
-                            bFlipRight = true;
-                        } else {
-                            bFlipRight = false;
-                        }
+                        bFlipRight = mFinger.x < mOldMovement.x;
 
                         // Save old movement values
                         mOldMovement.x = mFinger.x;
@@ -822,18 +789,10 @@ public class PageCurlView extends View {
      * Do the page curl depending on the methods we are using
      */
     private void DoPageCurl() {
-        if (bFlipping) {
-            if (IsCurlModeDynamic())
-                doDynamicCurl();
-            else
-                doSimpleCurl();
-
-        } else {
-            if (IsCurlModeDynamic())
-                doDynamicCurl();
-            else
-                doSimpleCurl();
-        }
+        if (IsCurlModeDynamic())
+            doDynamicCurl();
+        else
+            doSimpleCurl();
     }
 
     /**
@@ -850,7 +809,7 @@ public class PageCurlView extends View {
         // Calculate point D
         mD.x = 0;
         mD.y = 0;
-        if (mA.x > width / 2) {
+        if (mA.x > (float) width / 2) {
             mD.x = width;
             mD.y = height - (width - mA.x) * height / mA.x;
         } else {
@@ -870,7 +829,7 @@ public class PageCurlView extends View {
 
         // If the x position of A is above half of the page we are still not
         // folding the upper-right edge and so E and D are equal.
-        if (mA.x > width / 2) {
+        if (mA.x > (float) width / 2) {
             mE.x = mD.x;
             mE.y = mD.y;
         } else {
@@ -979,7 +938,6 @@ public class PageCurlView extends View {
             touchToFlipping = false;
             bFlipRight = true;
             bFlipLeft = false;
-            bUserMoves = false;
             bFlipping = true;
             FlipAnimationStep();
         }
@@ -1002,7 +960,6 @@ public class PageCurlView extends View {
             mMovement.x = IsCurlModeDynamic() ? width << 1 : width;
             mMovement.y = mInitialEdgeOffset;
 
-            bUserMoves = false;
             bFlipping = true;
             FlipAnimationStep();
         }
@@ -1011,36 +968,14 @@ public class PageCurlView extends View {
     /**
      * Handle scroll to page from select item in list page
      *
-     * @param index
      */
     public void actionScrollTo(int index) {
-//        if (index < mIndex) {
-//            int backIndex = index + 1;
-//            int foreIndex = backIndex - 1;
-//            if(foreIndex < 0) {
-//                foreIndex = mPages.size()-1;
-//            }
-//            mIndex = foreIndex;
-//            setViews(foreIndex, backIndex);
-//        } else if (index > mIndex) {
-//            int foreIndex = index;
-//            if(foreIndex >= mPages.size()) {
-//                foreIndex = 0;
-//            }
-//            int backIndex = foreIndex + 1;
-//            if(backIndex >= mPages.size()) {
-//                backIndex = 0;
-//            }
-//            mIndex = foreIndex;
-//            setViews(foreIndex, backIndex);
-//        }
-        int foreIndex = index;
-        int backIndex = foreIndex + 1;
+        int backIndex = index + 1;
         if (backIndex >= mPages.size()) {
             backIndex = 0;
         }
-        mIndex = foreIndex;
-        setViews(foreIndex, backIndex);
+        mIndex = index;
+        setViews(index, backIndex);
         this.invalidate();
     }
 
@@ -1061,10 +996,13 @@ public class PageCurlView extends View {
     //---------------------------------------------------------------
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         // Always refresh offsets
-        mCurrentLeft = getLeft();
-        mCurrentTop = getTop();
+        /**
+         * Left and top offset to be applied when drawing
+         */
+        int mCurrentLeft = getLeft();
+        int mCurrentTop = getTop();
 
         // Translate the whole canvas
         //canvas.translate(mCurrentLeft, mCurrentTop);
@@ -1085,14 +1023,14 @@ public class PageCurlView extends View {
         //  1) Maintain aspect ratio
         //  2) Uniform scale
         //  3) ...
-        Rect rect = new Rect();
+        @SuppressLint("DrawAllocation") Rect rect = new Rect();
         rect.left = 0;
         rect.top = 0;
         rect.bottom = getHeight();
         rect.right = getWidth();
 
         // First Page render
-        Paint paint = new Paint();
+        @SuppressLint("DrawAllocation") Paint paint = new Paint();
 
         // Draw our elements
         drawForeground(canvas, rect, paint);
@@ -1115,8 +1053,6 @@ public class PageCurlView extends View {
 
     /**
      * Called on the first draw event of the view
-     *
-     * @param canvas
      */
     protected void onFirstDrawEvent(Canvas canvas) {
 
@@ -1128,10 +1064,6 @@ public class PageCurlView extends View {
 
     /**
      * Draw the foreground
-     *
-     * @param canvas
-     * @param rect
-     * @param paint
      */
     private void drawForeground(Canvas canvas, Rect rect, Paint paint) {
         canvas.drawBitmap(mForeground, null, rect, paint);
@@ -1143,8 +1075,6 @@ public class PageCurlView extends View {
 
     /**
      * Create a Path used as a mask to draw the background page
-     *
-     * @return
      */
     private Path createBackgroundPath() {
         Path path = new Path();
@@ -1158,10 +1088,6 @@ public class PageCurlView extends View {
 
     /**
      * Draw the background image.
-     *
-     * @param canvas
-     * @param rect
-     * @param paint
      */
     private void drawBackground(Canvas canvas, Rect rect, Paint paint) {
         Path mask = createBackgroundPath();
@@ -1180,8 +1106,6 @@ public class PageCurlView extends View {
 
     /**
      * Creates a path used to draw the curl edge in.
-     *
-     * @return
      */
     private Path createCurlEdgePath() {
         Path path = new Path();
@@ -1195,8 +1119,6 @@ public class PageCurlView extends View {
 
     /**
      * Draw the curl page edge
-     *
-     * @param canvas
      */
     private void drawCurlEdge(Canvas canvas) {
         Path path = createCurlEdgePath();
@@ -1205,9 +1127,6 @@ public class PageCurlView extends View {
 
     /**
      * Draw page num (let this be a bit more custom)
-     *
-     * @param canvas
-     * @param pageNum
      */
     private void drawPageNum(Canvas canvas, int pageNum) {
         mTextPaint.setColor(Color.WHITE);
@@ -1232,12 +1151,6 @@ public class PageCurlView extends View {
 
     /**
      * Draw a text with a nice shadow centered in the X axis
-     *
-     * @param canvas
-     * @param text
-     * @param y
-     * @param textPain
-     * @param shadowPaint
      */
     public static void drawCentered(Canvas canvas, String text, float y, Paint textPain, Paint shadowPaint) {
         float posx = (canvas.getWidth() - textPain.measureText(text)) / 2;
@@ -1246,8 +1159,6 @@ public class PageCurlView extends View {
 
     /**
      * Draw debug info
-     *
-     * @param canvas
      */
     private void drawDebug(Canvas canvas) {
         float posX = 10;
