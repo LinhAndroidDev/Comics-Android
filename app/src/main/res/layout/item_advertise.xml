@@ -15,6 +15,7 @@
             android:id="@+id/imgAdvertise"
             android:layout_width="match_parent"
             android:layout_height="200dp"
+            android:importantForAccessibility="no"
             android:scaleType="centerCrop" />
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

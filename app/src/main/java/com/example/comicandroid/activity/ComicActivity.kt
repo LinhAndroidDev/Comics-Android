@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.comicandroid.PageCurlView
 import com.example.comicandroid.R
@@ -14,8 +15,10 @@ import com.example.comicandroid.adapter.PageComicAdapter
 import com.example.comicandroid.databinding.ActivityComicBinding
 import com.example.comicandroid.heightStatusBar
 import com.example.comicandroid.model.Comic
+import kotlinx.coroutines.launch
 
 class ComicActivity : AppCompatActivity() {
+    private var pageComicAdapter: PageComicAdapter? = null
 
     private var binding: ActivityComicBinding? = null
 
@@ -41,7 +44,8 @@ class ComicActivity : AppCompatActivity() {
                     binding?.viewController?.translateViewY(isVisibleController)
                 }
                 comicView.setOnChangeIndexPage { indexPage ->
-                    binding?.txtIndex?.text = "Trang $indexPage"
+                    binding?.txtIndex?.text = "Trang ${indexPage + 1}"
+                    pageComicAdapter?.setIndexSelected(indexPage)
                 }
                 binding?.viewComic?.addView(comicView)
                 comicView.GetListImageBitmap(
@@ -50,18 +54,27 @@ class ComicActivity : AppCompatActivity() {
                     comic.sizePage
                 )
 
-                val pageComicAdapter = PageComicAdapter()
-                pageComicAdapter.comics = comicView.mPages
-                pageComicAdapter.onClickItem = {
+                pageComicAdapter = PageComicAdapter()
+                pageComicAdapter?.comics = comicView.mPages
+                pageComicAdapter?.onClickItem = {
+                    binding?.rcvPageComic?.scrollToPosition(it)
                     comicView.actionScrollTo(it)
                 }
                 binding?.rcvPageComic?.adapter = pageComicAdapter
 
                 binding?.back?.setOnClickListener {
+                    binding?.rcvPageComic?.scrollToPosition(
+                        pageComicAdapter?.selectPosition?.minus(
+                            1
+                        ) ?: 0
+                    )
                     comicView.actionBackView()
                 }
 
                 binding?.next?.setOnClickListener {
+                    binding?.rcvPageComic?.scrollToPosition(
+                        pageComicAdapter?.selectPosition?.plus(1) ?: 0
+                    )
                     comicView.actionNextView()
                 }
             }

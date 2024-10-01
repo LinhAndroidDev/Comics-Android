@@ -986,7 +986,7 @@ public class PageCurlView extends View {
      * @param background - Background view index
      */
     private void setViews(int foreground, int background) {
-        changeIndexPage.onIndex(mIndex + 1);
+        changeIndexPage.onIndex(mIndex);
         mForeground = mPages.get(foreground);
         mBackground = mPages.get(background);
     }

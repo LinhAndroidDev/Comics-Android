@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tool="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <androidx.cardview.widget.CardView
@@ -18,6 +19,7 @@
             android:id="@+id/imgComic"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:importantForAccessibility="no"
             android:scaleType="centerCrop" />
     </androidx.cardview.widget.CardView>
 
@@ -28,7 +30,7 @@
         android:layout_marginStart="10dp"
         android:ellipsize="end"
         android:maxLines="1"
-        android:text="Thám tử lừng danh Conan"
+        tool:text="Thám tử lừng danh Conan"
         android:textColor="@color/textColor"
         android:textSize="16sp"
         android:textStyle="bold" />
